@@ -26,11 +26,14 @@
                 worker: workerPath,
                 ...JSON.parse(configJSON)
             };
+            if (import.meta.env.PROD) {
+                paths.serviceWorker = "sw.js";
+            }
             const platform = new Platform(
                 document.body,
                 paths,
                 null,
-                {development: true}
+                {development: import.meta.env.DEV}
             );
             main(platform);
         </script>

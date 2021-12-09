@@ -3,12 +3,14 @@ const path = require('path');
 
 module.exports = function injectWebManifest(manifestFile) {
     let root;
+    let base;
     let manifestHref;
     return {
         name: "hydrogen:injectWebManifest",
         apply: "build",
         configResolved: config => {
             root = config.root;
+            base = config.base;
         },
         transformIndexHtml: {
             transform(html) {
@@ -32,7 +34,10 @@ module.exports = function injectWebManifest(manifestFile) {
                     name: path.basename(iconFileName),
                     source: imgData
                 });
-                icon.src = this.getFileName(ref);
+                // we take the basename as getFileName gives the filename
+                // relative to the output dir, but the manifest is an asset
+                // just like they icon, so we assume they end up in the same dir
+                icon.src = path.basename(this.getFileName(ref));
             }
             const outputName = path.basename(absoluteManifestFile);
             const manifestRef = this.emitFile({
@@ -40,7 +45,7 @@ module.exports = function injectWebManifest(manifestFile) {
                 name: outputName,
                 source: JSON.stringify(manifest)
             });
-            manifestHref = this.getFileName(manifestRef);
+            manifestHref = base + this.getFileName(manifestRef);
         }
     };
 }
